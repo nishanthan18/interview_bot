@@ -28,10 +28,7 @@ _GOOGLE_SVG = """
 """
 
 
-def google_login_button(
-    text: str = "Continue with Google",
-    key: str = "google_login_btn",
-):
+def google_login_button(text: str = "Continue with Google", key: str = "google_login_btn"):
     st.markdown("<div class='google-login-shell'>", unsafe_allow_html=True)
 
     st.markdown(f"""
@@ -41,21 +38,17 @@ def google_login_button(
         </div>
     """, unsafe_allow_html=True)
 
-    clicked = st.button(
-        text,
-        use_container_width=True,
-        key=key,
-    )
+    clicked = st.button(text, use_container_width=True, key=key)
 
     st.markdown("</div>", unsafe_allow_html=True)
 
     if clicked:
-        st.login()
+        st.info("Google sign-in is not configured yet in deployment.")
 
 
 def render_public_topbar():
     page = st.query_params.get("page", "landing")
-    left, login_col, signup_col = st.columns([6, 1.15, 1.15])
+    _, login_col, signup_col = st.columns([6, 1.15, 1.15])
 
     with login_col:
         if page != "login":
@@ -69,4 +62,8 @@ def render_public_topbar():
 
 
 def logout_user():
-    st.logout()
+    for key in ["app_logged_in", "app_user"]:
+        if key in st.session_state:
+            del st.session_state[key]
+    goto("landing")
+    st.rerun()
