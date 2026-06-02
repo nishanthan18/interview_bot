@@ -3,10 +3,8 @@ import streamlit as st
 
 def goto(page_name: str):
     st.query_params["page"] = page_name
-    st.rerun()
 
 
-# Google "G" logo as an inline SVG (official brand colours)
 _GOOGLE_SVG = """
 <svg width="18" height="18" viewBox="0 0 18 18" fill="none"
      xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0;">
@@ -26,47 +24,47 @@ _GOOGLE_SVG = """
         d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58
            C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958
            L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58Z"/>
-</svg>"""
+</svg>
+"""
 
 
-def google_login_button(text: str = "Continue with Google",
-                        key: str = "google_login_btn"):
-    """
-    Render a polished Google sign-in button.
-    The SVG Google icon is shown via an HTML row directly above the
-    Streamlit button (which can't render HTML in its label).
-    We overlap them with CSS so the user sees one cohesive button.
-    """
-    # Wrapper gives us a styling hook
-    st.markdown("<div class='google-btn-wrapper'>", unsafe_allow_html=True)
+def google_login_button(
+    text: str = "Continue with Google",
+    key: str = "google_login_btn",
+):
+    st.markdown("<div class='google-login-shell'>", unsafe_allow_html=True)
 
-    # Icon + label row (purely visual — the real click target is the button below)
     st.markdown(f"""
-        <div class="google-btn-visual" aria-hidden="true">
+        <div class="google-login-visual">
             {_GOOGLE_SVG}
             <span>{text}</span>
         </div>
     """, unsafe_allow_html=True)
 
-    if st.button(text, use_container_width=True, key=key):
-        st.login()
+    clicked = st.button(
+        text,
+        use_container_width=True,
+        key=key,
+    )
 
     st.markdown("</div>", unsafe_allow_html=True)
+
+    if clicked:
+        st.login()
 
 
 def render_public_topbar():
     page = st.query_params.get("page", "landing")
-    c1, c2, c3 = st.columns([6, 1.2, 1.2])
+    left, login_col, signup_col = st.columns([6, 1.15, 1.15])
 
-    with c2:
+    with login_col:
         if page != "login":
             if st.button("Login", use_container_width=True, key="topbar_login"):
                 goto("login")
 
-    with c3:
+    with signup_col:
         if page != "signup":
-            if st.button("Sign Up", use_container_width=True,
-                         type="primary", key="topbar_signup"):
+            if st.button("Sign Up", use_container_width=True, type="primary", key="topbar_signup"):
                 goto("signup")
 
 
