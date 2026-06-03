@@ -3,7 +3,8 @@ from groq import Groq
 
 
 def get_groq_client():
-    return Groq(api_key=st.secrets["groq"]["api_key"])
+    api_key = st.secrets.get("GROQ_API_KEY") or st.secrets.get("groq", {}).get("api_key", "")
+    return Groq(api_key=api_key)
 
 
 def build_messages(system_prompt: str, history: list[dict], latest_user_message: str = None):
@@ -21,10 +22,20 @@ def build_messages(system_prompt: str, history: list[dict], latest_user_message:
     return messages
 
 
-def chat_completion(system_prompt: str, history: list[dict], latest_user_message: str = None, temperature: float = 0.4):
+def chat_completion(
+    system_prompt: str,
+    history: list[dict],
+    latest_user_message: str = None,
+    temperature: float = 0.4,
+):
     try:
         client = get_groq_client()
-        model = st.secrets["groq"].get("model", "llama-3.3-70b-versatile")
+
+        # Support both flat key and nested [groq] section
+        try:
+            model = st.secrets["groq"].get("model", "llama-3.3-70b-versatile")
+        except Exception:
+            model = st.secrets.get("GROQ_MODEL", "llama-3.3-70b-versatile")
 
         messages = build_messages(system_prompt, history, latest_user_message)
 
@@ -36,5 +47,6 @@ def chat_completion(system_prompt: str, history: list[dict], latest_user_message
 
         content = completion.choices[0].message.content
         return content.strip() if content else "I could not generate a response. Please try again."
+
     except Exception as e:
         return f"Error while contacting Groq API: {str(e)}"

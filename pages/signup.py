@@ -13,9 +13,6 @@ def render_signup():
     left, center, right = st.columns([1.1, 1, 1.1])
 
     with center:
-        if "signup_errors" not in st.session_state:
-            st.session_state.signup_errors = []
-
         st.markdown("""
         <div class="auth-card">
             <div class="auth-badge">New Account</div>
@@ -46,11 +43,12 @@ def render_signup():
             Username
         </div>
         """, unsafe_allow_html=True)
+
         username = st.text_input(
             "Username",
             placeholder="e.g. john_doe",
             label_visibility="collapsed",
-            key="su_username",
+            key="su_username"
         )
 
         st.markdown("""
@@ -65,11 +63,12 @@ def render_signup():
             Email address
         </div>
         """, unsafe_allow_html=True)
+
         email = st.text_input(
             "Email address",
             placeholder="you@example.com",
             label_visibility="collapsed",
-            key="su_email",
+            key="su_email"
         )
 
         st.markdown("""
@@ -83,12 +82,13 @@ def render_signup():
             Password
         </div>
         """, unsafe_allow_html=True)
+
         password = st.text_input(
             "Password",
             placeholder="Minimum 8 characters",
             type="password",
             label_visibility="collapsed",
-            key="su_password",
+            key="su_password"
         )
 
         st.markdown("""
@@ -101,12 +101,13 @@ def render_signup():
             Confirm password
         </div>
         """, unsafe_allow_html=True)
+
         confirm = st.text_input(
             "Confirm password",
             placeholder="Re-enter your password",
             type="password",
             label_visibility="collapsed",
-            key="su_confirm",
+            key="su_confirm"
         )
 
         st.markdown("</div>", unsafe_allow_html=True)
@@ -133,39 +134,26 @@ def render_signup():
             if password and confirm != password:
                 errors.append("Passwords do not match.")
 
-            st.session_state.signup_errors = errors
-
-            if not errors:
+            if errors:
+                for e in errors:
+                    st.markdown(f"""
+                    <div class="auth-error">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
+                             stroke="currentColor" stroke-width="2"
+                             stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"/>
+                            <line x1="12" y1="8" x2="12" y2="12"/>
+                            <line x1="12" y1="16" x2="12.01" y2="16"/>
+                        </svg>
+                        {e}
+                    </div>
+                    """, unsafe_allow_html=True)
+            else:
                 st.session_state["pending_user"] = {
                     "username": username.strip(),
                     "email": email.strip(),
                     "password": password,
                 }
-                st.session_state["signup_success"] = (
-                    f"Account created for {username.strip()} successfully. Please sign in."
-                )
+                st.success("Account created successfully. Please sign in.")
                 goto("login")
                 st.rerun()
-
-        if st.session_state.signup_errors:
-            for e in st.session_state.signup_errors:
-                st.markdown(f"""
-                <div class="auth-error">
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
-                         stroke="currentColor" stroke-width="2"
-                         stroke-linecap="round" stroke-linejoin="round">
-                        <circle cx="12" cy="12" r="10"/>
-                        <line x1="12" y1="8" x2="12" y2="12"/>
-                        <line x1="12" y1="16" x2="12.01" y2="16"/>
-                    </svg>
-                    {e}
-                </div>
-                """, unsafe_allow_html=True)
-
-        st.markdown(
-            "<div class='auth-footer-text'>Already have an account?</div>",
-            unsafe_allow_html=True,
-        )
-
-        if st.button("Sign in instead", use_container_width=True, key="signup_to_login"):
-            goto("login")

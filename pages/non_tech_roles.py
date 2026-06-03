@@ -42,15 +42,38 @@ def render_non_tech_roles(user):
 
     sessions = list_sessions(user_id, "non_tech_roles") if user_id else []
     session_map = {"New session": None}
-
     for session in sessions:
         title = session.get("title", "Untitled Session")
         created = session.get("created_at", "")[:10]
         session_map[f"{title} · {created}"] = session["id"]
 
-    selected_session_label = st.selectbox("Choose session", list(session_map.keys()))
-    session_id = session_map[selected_session_label]
+    session_labels = list(session_map.keys())
 
+    # Determine default index based on persisted session
+    default_index = 0
+    persisted_id = st.session_state.get("nontech_session_id")
+    if persisted_id:
+        for i, (label, sid) in enumerate(session_map.items()):
+            if sid == persisted_id:
+                default_index = i
+                break
+
+    selected_session_label = st.selectbox(
+        "Choose session",
+        session_labels,
+        index=default_index,
+        key="nontech_session_selector"
+    )
+    chosen_id = session_map[selected_session_label]
+
+    # If user manually picks a different session from dropdown, update state
+    if chosen_id != persisted_id:
+        st.session_state["nontech_session_id"] = chosen_id
+        persisted_id = chosen_id
+
+    session_id = persisted_id
+
+    # Load and display chat history
     history = []
     if session_id:
         history = get_chat_messages(session_id)
@@ -58,6 +81,7 @@ def render_non_tech_roles(user):
             with st.chat_message(msg["role"]):
                 st.write(msg["content"])
 
+    # Quick-action buttons
     row = st.columns(4)
     if row[0].button("Ask Role Question", use_container_width=True):
         st.session_state["nontech_prompt"] = f"Ask me one interview question for a {role_target} role."
@@ -74,6 +98,7 @@ def render_non_tech_roles(user):
         user_input = st.session_state.pop("nontech_prompt", None)
 
     if user_input and user_id:
+        # Create a new session if none is active
         if not session_id:
             new_session = create_chat_session(
                 user_id=user_id,
@@ -84,6 +109,8 @@ def render_non_tech_roles(user):
                 st.error("Could not create session.")
                 st.stop()
             session_id = new_session["id"]
+            # Persist the new session so it survives rerun
+            st.session_state["nontech_session_id"] = session_id
             history = []
 
         save_chat_message(session_id, user_id, "user", user_input, {

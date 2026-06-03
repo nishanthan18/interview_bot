@@ -5,16 +5,16 @@ from supabase import create_client, Client
 @st.cache_resource
 def get_supabase() -> Client:
     return create_client(
-        st.secrets["supabase"]["url"],
-        st.secrets["supabase"]["anon_key"],
+        st.secrets["SUPABASE_URL"],
+        st.secrets["SUPABASE_ANON_KEY"],
     )
 
 
 @st.cache_resource
 def get_supabase_admin() -> Client:
     return create_client(
-        st.secrets["supabase"]["url"],
-        st.secrets["supabase"]["service_role_key"],
+        st.secrets["SUPABASE_URL"],
+        st.secrets.get("SUPABASE_SERVICE_ROLE_KEY", st.secrets["SUPABASE_ANON_KEY"]),
     )
 
 

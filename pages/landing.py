@@ -32,6 +32,7 @@ def render_landing():
             if st.button("Get Started Free", type="primary",
                          use_container_width=True, key="landing_cta"):
                 goto("signup")
+                st.rerun()
 
             st.markdown("<div style='height: 10px;'></div>", unsafe_allow_html=True)
 
